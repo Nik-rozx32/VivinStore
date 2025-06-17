@@ -6,7 +6,7 @@ import 'dart:async';
 import 'package:flutter/rendering.dart';
 import 'package:vivinstore/widgets/cart_dialog.dart';
 import 'package:vivinstore/widgets/dress_card.dart';
-import 'package:vivinstore/widgets/wishlist_dialog.dart';
+import 'package:vivinstore/screens/wishlist_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -141,7 +141,7 @@ class _HomePageState extends State<HomePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${dress.name} added to wishlist!'),
-            backgroundColor: Colors.pink,
+            backgroundColor: Colors.black,
             duration: Duration(seconds: 2),
           ),
         );
@@ -252,18 +252,28 @@ class _HomePageState extends State<HomePage> {
             Stack(
               children: [
                 IconButton(
-                  icon: Icon(Icons.favorite, color: Colors.black),
+                  icon: Icon(Icons.favorite_border, color: Colors.black),
                   onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => WishlistDialog(
-                        wishlist: wishlist,
-                        onRemove: (dress) {
-                          setState(() {
-                            wishlist.removeWhere((item) => item.id == dress.id);
-                          });
-                        },
-                        onAddToCart: addToCart,
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => WishlistPage(
+                          wishlist: wishlist,
+                          onRemove: (dress) {
+                            setState(() {
+                              wishlist
+                                  .removeWhere((item) => item.id == dress.id);
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    '${dress.name} removed from wishlist!'),
+                                backgroundColor: Colors.orange,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          onAddToCart: addToCart,
+                        ),
                       ),
                     );
                   },
@@ -275,7 +285,7 @@ class _HomePageState extends State<HomePage> {
                     child: Container(
                       padding: EdgeInsets.all(2),
                       decoration: BoxDecoration(
-                        color: Colors.pink,
+                        color: Colors.red,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       constraints: BoxConstraints(
@@ -453,7 +463,8 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     )
-                  : GridView.builder(
+                  : // Replace your GridView.builder in HomePage with this:
+                  GridView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -464,7 +475,7 @@ class _HomePageState extends State<HomePage> {
                                 : 2,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: 0.85, // Adjust this value as needed
+                        childAspectRatio: 0.85,
                       ),
                       itemCount: filteredDresses.length,
                       itemBuilder: (context, index) {
@@ -472,6 +483,8 @@ class _HomePageState extends State<HomePage> {
                         return DressCard(
                           dress: dress,
                           onAddToCart: addToCart,
+                          onToggleWishlist: toggleWishlist, // This was missing
+                          isWishlisted: isInWishlist(dress), // This was missing
                         );
                       },
                     ),
