@@ -3,10 +3,9 @@ import 'package:vivinstore/models/cart_item.dart';
 import 'package:vivinstore/models/dress.dart';
 import 'package:vivinstore/models/user.dart';
 import 'dart:async';
-import 'package:flutter/rendering.dart';
-import 'package:vivinstore/widgets/cart_dialog.dart';
 import 'package:vivinstore/widgets/dress_card.dart';
 import 'package:vivinstore/screens/wishlist_page.dart';
+import 'package:vivinstore/screens/cart_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -330,15 +329,31 @@ class _HomePageState extends State<HomePage> {
             // Cart Button
             Stack(
               children: [
+                // Replace the cart button's onPressed method with this:
                 IconButton(
                   icon: Icon(Icons.shopping_cart, color: Colors.black),
                   onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => CartDialog(
-                        cart: cart,
-                        totalPrice: totalPrice,
-                        onRemove: removeFromCart,
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CartPage(
+                          cart:
+                              cart, // Use the actual cart variable from your state
+                          totalPrice:
+                              totalPrice, // Use the actual totalPrice getter
+                          onRemove:
+                              removeFromCart, // Use your existing removeFromCart method
+                          onUpdateQuantity: (index, newQuantity) {
+                            // Handle quantity updates
+                            setState(() {
+                              if (newQuantity > 0) {
+                                cart[index].quantity = newQuantity;
+                              } else {
+                                cart.removeAt(index);
+                              }
+                            });
+                          },
+                        ),
                       ),
                     );
                   },
