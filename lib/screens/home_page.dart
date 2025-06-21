@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:vivinstore/models/cart_item.dart';
 import 'package:vivinstore/models/dress.dart';
 import 'package:vivinstore/models/user.dart';
-import 'dart:async';
 import 'package:vivinstore/widgets/dress_card.dart';
+import 'package:vivinstore/widgets/image_carousel.dart';
 import 'package:vivinstore/screens/wishlist_page.dart';
 import 'package:vivinstore/screens/cart_page.dart';
+import 'package:vivinstore/screens/profile_page.dart';
+import 'package:vivinstore/screens/login_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -23,56 +25,7 @@ class _HomePageState extends State<HomePage> {
   TextEditingController searchController = TextEditingController();
   bool showSearchBar = false;
 
-  final List<Dress> dresses = [
-    Dress(
-      id: '1',
-      name: 'Elegant Evening Gown',
-      price: 299.99,
-      imageUrl: 'lib/image/pic1.jpg',
-      category: 'Women',
-      sizes: ['XS', 'S', 'M', 'L', 'XL'],
-    ),
-    Dress(
-      id: '2',
-      name: 'Floral Dress',
-      price: 89.99,
-      imageUrl: 'lib/image/pic1.jpg',
-      category: 'Men',
-      sizes: ['S', 'M', 'L', 'XL'],
-    ),
-    Dress(
-      id: '3',
-      name: ' Midi Dress',
-      price: 159.99,
-      imageUrl: 'lib/image/pic1.jpg',
-      category: 'Kids',
-      sizes: ['XS', 'S', 'M', 'L'],
-    ),
-    Dress(
-      id: '4',
-      name: 'Cocktail Party Dress',
-      price: 199.99,
-      imageUrl: 'lib/image/pic1.jpg',
-      category: 'Women',
-      sizes: ['S', 'M', 'L', 'XL'],
-    ),
-    Dress(
-      id: '5',
-      name: 'Bohemian Maxi Dress',
-      price: 129.99,
-      imageUrl: 'lib/image/pic1.jpg',
-      category: 'Men',
-      sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-    ),
-    Dress(
-      id: '6',
-      name: 'Little Black Dress',
-      price: 179.99,
-      imageUrl: 'lib/image/pic1.jpg',
-      category: 'Women',
-      sizes: ['XS', 'S', 'M', 'L'],
-    ),
-  ];
+  final List<Dress> dresses = [];
 
   List<Dress> get filteredDresses {
     List<Dress> filtered = dresses;
@@ -196,8 +149,17 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
+        leading: isSmallScreen
+            ? Builder(
+                builder: (context) => IconButton(
+                  icon: Icon(Icons.menu, color: Colors.black),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
+              )
+            : null,
         title: !showSearchBar
             ? Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Image.asset('lib/assets/logo.png', height: 50, width: 50),
                   SizedBox(width: 4),
@@ -247,147 +209,351 @@ class _HomePageState extends State<HomePage> {
               icon: Icon(Icons.search, color: Colors.black),
               onPressed: toggleSearchBar,
             ),
-            // Wishlist Button
-            Stack(
-              children: [
-                IconButton(
-                  icon: Icon(Icons.favorite_border, color: Colors.black),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => WishlistPage(
-                          wishlist: wishlist,
-                          onRemove: (dress) {
-                            setState(() {
-                              wishlist
-                                  .removeWhere((item) => item.id == dress.id);
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    '${dress.name} removed from wishlist!'),
-                                backgroundColor: Colors.orange,
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          onAddToCart: addToCart,
+            // Show wishlist and cart only on larger screens
+            if (!isSmallScreen) ...[
+              // Wishlist Button
+              Stack(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.favorite_border, color: Colors.black),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => WishlistPage(
+                            wishlist: wishlist,
+                            onRemove: (dress) {
+                              setState(() {
+                                wishlist
+                                    .removeWhere((item) => item.id == dress.id);
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      '${dress.name} removed from wishlist!'),
+                                  backgroundColor: Colors.orange,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            onAddToCart: addToCart,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-                if (wishlist.isNotEmpty)
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      constraints: BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
-                      ),
-                      child: Text(
-                        '${wishlist.length}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
+                      );
+                    },
+                  ),
+                  if (wishlist.isNotEmpty)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        textAlign: TextAlign.center,
+                        constraints: BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '${wishlist.length}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
-                  ),
-              ],
-            ),
-            // Login/Profile Button
-            IconButton(
-              icon: Icon(
-                currentUser != null ? Icons.account_circle : Icons.login,
-                color: Colors.black,
+                ],
               ),
-              onPressed: () {
-                if (currentUser != null) {
-                  showDialog(
-                    context: context,
-                    builder: (context) => ProfileDialog(
-                      user: currentUser!,
-                      onLogout: logout,
+              // Cart Button
+              Stack(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.shopping_cart, color: Colors.black),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CartPage(
+                            cart: cart,
+                            totalPrice: totalPrice,
+                            onRemove: removeFromCart,
+                            onUpdateQuantity: (index, newQuantity) {
+                              setState(() {
+                                if (newQuantity > 0) {
+                                  cart[index].quantity = newQuantity;
+                                } else {
+                                  cart.removeAt(index);
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  if (cart.isNotEmpty)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '${cart.length}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+            // Profile/Login Button
+            if (currentUser != null)
+              IconButton(
+                icon: const Icon(Icons.person, color: Colors.black),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const ProfilePage(),
                     ),
                   );
-                } else {
-                  showDialog(
-                    context: context,
-                    builder: (context) => LoginDialog(onLogin: login),
-                  );
-                }
-              },
-            ),
-            // Cart Button
-            Stack(
-              children: [
-                // Replace the cart button's onPressed method with this:
-                IconButton(
-                  icon: Icon(Icons.shopping_cart, color: Colors.black),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CartPage(
-                          cart:
-                              cart, // Use the actual cart variable from your state
-                          totalPrice:
-                              totalPrice, // Use the actual totalPrice getter
-                          onRemove:
-                              removeFromCart, // Use your existing removeFromCart method
-                          onUpdateQuantity: (index, newQuantity) {
-                            // Handle quantity updates
-                            setState(() {
-                              if (newQuantity > 0) {
-                                cart[index].quantity = newQuantity;
-                              } else {
-                                cart.removeAt(index);
-                              }
-                            });
-                          },
-                        ),
-                      ),
-                    );
-                  },
+                },
+              )
+            else
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Color(0xFF2C1810)),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                if (cart.isNotEmpty)
-                  Positioned(
-                    right: 8,
-                    top: 8,
-                    child: Container(
-                      padding: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      constraints: BoxConstraints(
-                        minWidth: 16,
-                        minHeight: 16,
-                      ),
-                      child: Text(
-                        '${cart.length}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => LoginScreen()));
+                  },
+                  child: Text(
+                    'Login',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-              ],
-            ),
-            SizedBox(width: isSmallScreen ? 8 : 16),
+                ),
+              ),
+            SizedBox(width: isSmallScreen ? 5 : 16),
           ],
         ],
       ),
+      drawer: isSmallScreen
+          ? Drawer(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  DrawerHeader(
+                    decoration: BoxDecoration(
+                      color: Color(0xFFD4AF37),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Image.asset('lib/assets/logo.png',
+                                height: 40, width: 40),
+                            SizedBox(width: 8),
+                            Text(
+                              'Vivin Store',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 16),
+                        if (currentUser != null)
+                          Text(
+                            'Welcome, ${currentUser!.name}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  ListTile(
+                    leading: Stack(
+                      children: [
+                        Icon(Icons.favorite_border, color: Colors.black),
+                        if (wishlist.isNotEmpty)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              padding: EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              constraints: BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Text(
+                                '${wishlist.length}',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    title: Text('Wishlist'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => WishlistPage(
+                            wishlist: wishlist,
+                            onRemove: (dress) {
+                              setState(() {
+                                wishlist
+                                    .removeWhere((item) => item.id == dress.id);
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      '${dress.name} removed from wishlist!'),
+                                  backgroundColor: Colors.orange,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            onAddToCart: addToCart,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: Stack(
+                      children: [
+                        Icon(Icons.shopping_cart, color: Colors.black),
+                        if (cart.isNotEmpty)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              padding: EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              constraints: BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Text(
+                                '${cart.length}',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    title: Text('Cart'),
+                    trailing: cart.isNotEmpty
+                        ? Text(
+                            '\$${totalPrice.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFD4AF37),
+                            ),
+                          )
+                        : null,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CartPage(
+                            cart: cart,
+                            totalPrice: totalPrice,
+                            onRemove: removeFromCart,
+                            onUpdateQuantity: (index, newQuantity) {
+                              setState(() {
+                                if (newQuantity > 0) {
+                                  cart[index].quantity = newQuantity;
+                                } else {
+                                  cart.removeAt(index);
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  Divider(),
+                  if (currentUser != null) ...[
+                    ListTile(
+                      leading: Icon(Icons.person, color: Colors.black),
+                      title: Text('Profile'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const ProfilePage(),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.logout, color: Colors.red),
+                      title: Text('Logout'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        logout();
+                      },
+                    ),
+                  ] else
+                    ListTile(
+                      leading: Icon(Icons.login, color: Colors.green),
+                      title: Text('Login'),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LoginScreen()));
+                      },
+                    ),
+                ],
+              ),
+            )
+          : null,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -478,8 +644,7 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     )
-                  : // Replace your GridView.builder in HomePage with this:
-                  GridView.builder(
+                  : GridView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -498,343 +663,14 @@ class _HomePageState extends State<HomePage> {
                         return DressCard(
                           dress: dress,
                           onAddToCart: addToCart,
-                          onToggleWishlist: toggleWishlist, // This was missing
-                          isWishlisted: isInWishlist(dress), // This was missing
+                          onToggleWishlist: toggleWishlist,
+                          isWishlisted: isInWishlist(dress),
                         );
                       },
                     ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class LoginDialog extends StatefulWidget {
-  final Function(String, String) onLogin;
-
-  const LoginDialog({Key? key, required this.onLogin}) : super(key: key);
-
-  @override
-  _LoginDialogState createState() => _LoginDialogState();
-}
-
-class _LoginDialogState extends State<LoginDialog> {
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Login'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Name',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your name';
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 16),
-            TextFormField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                if (!value.contains('@')) {
-                  return 'Please enter a valid email';
-                }
-                return null;
-              },
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            if (_formKey.currentState!.validate()) {
-              widget.onLogin(_nameController.text, _emailController.text);
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Welcome, ${_nameController.text}!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Color(0xFF2C1810),
-            foregroundColor: Colors.white,
-          ),
-          child: Text('Login'),
-        ),
-      ],
-    );
-  }
-}
-
-class ProfileDialog extends StatelessWidget {
-  final User user;
-  final VoidCallback onLogout;
-
-  const ProfileDialog({Key? key, required this.user, required this.onLogout})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Profile'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: Color(0xFF2C1810),
-                child: Text(
-                  user.name[0].toUpperCase(),
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-              ),
-              SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user.name,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  Text(user.email, style: TextStyle(color: Colors.grey)),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('Close'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            onLogout();
-            Navigator.of(context).pop();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Logged out successfully'),
-                backgroundColor: Colors.orange,
-              ),
-            );
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-          ),
-          child: Text('Logout'),
-        ),
-      ],
-    );
-  }
-}
-
-// Continue with the rest of the original classes...
-class ImageCarousel extends StatefulWidget {
-  const ImageCarousel({super.key});
-
-  @override
-  _ImageCarouselState createState() => _ImageCarouselState();
-}
-
-class _ImageCarouselState extends State<ImageCarousel> {
-  int currentIndex = 0;
-  Timer? timer;
-  PageController pageController = PageController();
-
-  final List<String> carouselImages = [
-    'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1566479179817-491fcd79daa4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    startTimer();
-  }
-
-  void startTimer() {
-    timer = Timer.periodic(Duration(seconds: 2), (Timer timer) {
-      if (currentIndex < carouselImages.length - 1) {
-        currentIndex++;
-      } else {
-        currentIndex = 0;
-      }
-
-      if (pageController.hasClients) {
-        pageController.animateToPage(
-          currentIndex,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 250,
-      child: Stack(
-        children: [
-          PageView.builder(
-            controller: pageController,
-            onPageChanged: (index) {
-              setState(() {
-                currentIndex = index;
-              });
-            },
-            itemCount: carouselImages.length,
-            itemBuilder: (context, index) {
-              return Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(carouselImages[index]),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.3),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-          Positioned(
-            bottom: 16,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: carouselImages.asMap().entries.map((entry) {
-                return Container(
-                  width: 8,
-                  height: 8,
-                  margin: EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: currentIndex == entry.key
-                        ? Color(0xFFD4AF37)
-                        : Colors.white.withOpacity(0.5),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          Positioned(
-            left: 16,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: GestureDetector(
-                onTap: () {
-                  if (currentIndex > 0) {
-                    currentIndex--;
-                    pageController.animateToPage(
-                      currentIndex,
-                      duration: Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  }
-                },
-                child: Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.arrow_back_ios,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            right: 16,
-            top: 0,
-            bottom: 0,
-            child: Center(
-              child: GestureDetector(
-                onTap: () {
-                  if (currentIndex < carouselImages.length - 1) {
-                    currentIndex++;
-                    pageController.animateToPage(
-                      currentIndex,
-                      duration: Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  }
-                },
-                child: Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
